@@ -1,8 +1,42 @@
+"use client";
+
+
 import Breadcrumb from "@/components/Common/Breadcrumb";
+import { useAuth } from "@/lib/auth";
+import { register } from "@/lib/auth-api";
+import { RegisterUser } from "@/types/auth";
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 const Signup = () => {
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const router = useRouter();
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const userData: RegisterUser = { name, phone, password };
+      const response = await register(userData);
+      setSuccess('Registration successful! Redirecting to login...');
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred during registration.');
+    }
+  };
+
+
   return (
     <>
       <Breadcrumb title={"Signup"} pages={["Signup"]} />
@@ -87,7 +121,7 @@ const Signup = () => {
             </span>
 
             <div className="mt-5.5">
-              <form>
+              <form  onSubmit={handleSubmit}>
                 <div className="mb-5">
                   <label htmlFor="name" className="block mb-2.5">
                     Full Name <span className="text-red">*</span>
@@ -99,20 +133,24 @@ const Signup = () => {
                     id="name"
                     placeholder="Enter your full name"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
 
                 <div className="mb-5">
-                  <label htmlFor="email" className="block mb-2.5">
-                    Email Address <span className="text-red">*</span>
+                  <label htmlFor="phone" className="block mb-2.5">
+                    Phone Number <span className="text-red">*</span>
                   </label>
 
                   <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Enter your email address"
+                    type="text"
+                    name="phone"
+                    id="phone"
+                    placeholder="Enter your Phone Number"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
 
@@ -128,10 +166,12 @@ const Signup = () => {
                     placeholder="Enter your password"
                     autoComplete="on"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
 
-                <div className="mb-5.5">
+                {/* <div className="mb-5.5">
                   <label htmlFor="re-type-password" className="block mb-2.5">
                     Re-type Password <span className="text-red">*</span>
                   </label>
@@ -144,7 +184,7 @@ const Signup = () => {
                     autoComplete="on"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                   />
-                </div>
+                </div> */}
 
                 <button
                   type="submit"
