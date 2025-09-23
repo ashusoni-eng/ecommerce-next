@@ -1,10 +1,11 @@
+import { ApiResponse } from "@/types/api";
 import axios, { AxiosError } from "axios";
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+  return localStorage.getItem("access_token");
 };
 
 // Axios instance
@@ -20,9 +21,6 @@ apiClient.interceptors.request.use((config) => {
   const token = getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    // If no token, block the request
-    throw { status: 401, message: "Token not found" };
   }
   return config;
 });
@@ -47,54 +45,54 @@ const handleError = (error: AxiosError): never => {
 };
 
 export const api = {
-  get: async <T>(path: string): Promise<T> => {
+  get: async <T>(path: string): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.get<T>(path);
+      const res = await apiClient.get<ApiResponse<T>>(path);
       return res.data;
     } catch (err) {
       throw handleError(err as AxiosError);
     }
   },
 
-  post: async <T>(path: string, data: any): Promise<T> => {
+  post: async <T>(path: string, data: any): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.post<T>(path, data);
+      const res = await apiClient.post<ApiResponse<T>>(path, data);
       return res.data;
     } catch (err) {
       throw handleError(err as AxiosError);
     }
   },
 
-  put: async <T>(path: string, data: any): Promise<T> => {
+  put: async <T>(path: string, data: any): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.put<T>(path, data);
+      const res = await apiClient.put<ApiResponse<T>>(path, data);
       return res.data;
     } catch (err) {
       throw handleError(err as AxiosError);
     }
   },
 
-  patch: async <T>(path: string, data: any): Promise<T> => {
+  patch: async <T>(path: string, data: any): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.patch<T>(path, data);
+      const res = await apiClient.patch<ApiResponse<T>>(path, data);
       return res.data;
     } catch (err) {
       throw handleError(err as AxiosError);
     }
   },
 
-  delete: async <T>(path: string): Promise<T> => {
+  delete: async <T>(path: string): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.delete<T>(path);
+      const res = await apiClient.delete<ApiResponse<T>>(path);
       return res.data;
     } catch (err) {
       throw handleError(err as AxiosError);
     }
   },
 
-  upload: async <T>(path: string, formData: FormData): Promise<T> => {
+  upload: async <T>(path: string, formData: FormData): Promise<ApiResponse<T>> => {
     try {
-      const res = await apiClient.post<T>(path, formData, {
+      const res = await apiClient.post<ApiResponse<T>>(path, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

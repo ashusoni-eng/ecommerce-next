@@ -1,10 +1,44 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ProductItem from "@/components/Common/ProductItem";
-import shopData from "@/components/Shop/shopData";
+
+import { Product } from "@/types/product";
+import { api } from "@/lib/api";
 
 const NewArrival = () => {
+
+  const [newArrivalProducts, setNewArrivalProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchNewArrivals = async () => {
+      try {
+        const products = await api.get<Product[]>("/product/new-arrivals");
+        setNewArrivalProducts(products.data);
+      } catch (err) {
+        setError("Failed to fetch new arrivals.");
+        console.error("Error fetching new arrivals:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNewArrivals();
+  }, []);
+
+  if (loading) {
+    return <p>Loading new arrivals...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
+
+
+
   return (
     <section className="overflow-hidden pt-15">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
@@ -48,7 +82,7 @@ const NewArrival = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7.5 gap-y-9">
           {/* <!-- New Arrivals item --> */}
-          {shopData.map((item, key) => (
+          {newArrivalProducts.map((item, key) => (
             <ProductItem item={item} key={key} />
           ))}
         </div>

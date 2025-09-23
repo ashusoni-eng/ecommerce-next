@@ -1,11 +1,24 @@
+export type ProductImage = {
+  id: string;
+  productId: string;
+  url?: string;
+  alt?: string;
+  isPrimary: boolean;
+  createdAt: string; // Assuming string for simplicity, can be Date
+};
+
 export type Product = {
-  title: string;
-  reviews: number;
+  // imgs: any;
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  categoryId: string;
+  brand?: string;
   price: number;
-  discountedPrice: number;
-  id: number;
-  imgs?: {
-    thumbnails: string[];
-    previews: string[];
-  };
+  mrp?: number;
+  stock: number;
+  images: ProductImage[];
+  createdAt: string; // Assuming string for simplicity, can be Date
+  updatedAt: string; // Assuming string for simplicity, can be Date
 };

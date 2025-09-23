@@ -1,14 +1,57 @@
+'use client';
+
 import Breadcrumb from "@/components/Common/Breadcrumb";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { AppError } from "@/types/error";
+import { useRouter } from "next/navigation";
 
 const Signin = () => {
+  const { login } = useAuth();
+  const router = useRouter();
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<AppError | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      await login({ phone, password });
+      router.push("/");
+    } catch (err: any) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Breadcrumb title={"Signin"} pages={["Signin"]} />
       <section className="overflow-hidden py-20 bg-gray-2">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="max-w-[570px] w-full mx-auto rounded-xl bg-white shadow-1 p-4 sm:p-7.5 xl:p-11">
+
+            {error && (
+              <div
+                className="mb-5 rounded-lg border border-red-400 bg-red-light-3 text-red-dark px-4 py-3"
+                role="alert"
+              >
+                {Array.isArray(error.message) ? (
+                  error.message.map((msg, index) => (
+                    <p key={index}>{msg}</p>
+                  ))
+                ) : (
+                  error.message
+                )}
+              </div>
+            )}
+
             <div className="text-center mb-11">
               <h2 className="font-semibold text-xl sm:text-2xl xl:text-heading-5 text-dark mb-1.5">
                 Sign In to Your Account
@@ -17,17 +60,19 @@ const Signin = () => {
             </div>
 
             <div>
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-5">
-                  <label htmlFor="email" className="block mb-2.5">
-                    Email
+                  <label htmlFor="phone" className="block mb-2.5">
+                    Phone Number
                   </label>
 
                   <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Enter your email"
+                    type="text"
+                    name="phone"
+                    id="phone"
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                   />
                 </div>
@@ -43,6 +88,8 @@ const Signin = () => {
                     id="password"
                     placeholder="Enter your password"
                     autoComplete="on"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                   />
                 </div>
@@ -51,7 +98,7 @@ const Signin = () => {
                   type="submit"
                   className="w-full flex justify-center font-medium text-white bg-dark py-3 px-6 rounded-lg ease-out duration-200 hover:bg-blue mt-7.5"
                 >
-                  Sign in to account
+                  {loading ? "Signing in..." : "Sign in to account"}
                 </button>
 
                 <a

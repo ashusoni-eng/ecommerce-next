@@ -1,6 +1,6 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import data from "./categoryData";
 import Image from "next/image";
 
@@ -8,9 +8,14 @@ import Image from "next/image";
 import "swiper/css/navigation";
 import "swiper/css";
 import SingleItem from "./SingleItem";
+import { Category } from "@/types/category";
+import { api } from "@/lib/api";
 
 const Categories = () => {
   const sliderRef = useRef(null);
+  const [categories, setCategories] = useState<Category[]>([]); // State for categories
+  const [loading, setLoading] = useState<boolean>(true); // State for loading
+  const [error, setError] = useState<string | null>(null); // State for error
 
   const handlePrev = useCallback(() => {
     if (!sliderRef.current) return;
@@ -23,10 +28,37 @@ const Categories = () => {
   }, []);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response: any = await api.get<Category[]>("/category");
+        setCategories(response.data.data); // ✅ correct path
+      } catch (err: any) {
+        console.error("Failed to fetch categories:", err);
+        setError(err.message || "Failed to load categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
+  useEffect(() => {
     if (sliderRef.current) {
       sliderRef.current.swiper.init();
     }
-  }, []);
+  }, [categories]); // Re-initialize swiper when categories change
+
+  if (loading) {
+    return <p>Loading categories...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">Error: {error}</p>;
+  }
+
 
   return (
     <section className="overflow-hidden pt-17.5">
@@ -134,7 +166,7 @@ const Categories = () => {
               },
             }}
           >
-            {data.map((item, key) => (
+            {categories.map((item, key) => (
               <SwiperSlide key={key}>
                 <SingleItem item={item} />
               </SwiperSlide>

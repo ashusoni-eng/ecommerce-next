@@ -1,23 +1,30 @@
 export interface Credentials {
-    email : string,
-    password : string
+  phone: string,
+  password: string
 }
 
 export interface RegisterUser {
-    name : string,
-    phone : string,
-    password : string
+  name: string,
+  phone: string,
+  password: string
 }
 
 export interface LoginResponse {
-  access_token: string;
-  user: {
-    id: string;
-    name: string;
-    phone: string;
-    email: string;
-    role: string;
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: string;
+      name: string;
+      email: string | null;
+      phone: string;
+      verified: boolean;
+    };
   };
+  timestamp: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -25,7 +32,7 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string;      
+  token: string;
   password: string;
 }
 

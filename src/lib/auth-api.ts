@@ -14,9 +14,12 @@ export const login = async (credentials: Credentials): Promise<LoginResponse> =>
     try {
         const res = await apiClient.post<LoginResponse>("/auth/login", credentials);
         const data = res.data;
+        console.log("Backend login response:", data);
 
-        if (data?.access_token) {
-            localStorage.setItem("access_token", data.access_token);
+        if (data?.data?.accessToken) {
+            localStorage.setItem("access_token", data.data.accessToken);
+            localStorage.setItem("refresh_token", data.data.refreshToken);
+            localStorage.setItem("user", JSON.stringify(data.data.user));
         }
 
         return data;
@@ -30,8 +33,10 @@ export const register = async (credentials: RegisterUser): Promise<LoginResponse
         const res = await apiClient.post<LoginResponse>("/auth/register", credentials);
         const data = res.data;
 
-        if (data?.access_token) {
-            localStorage.setItem("access_token", data.access_token);
+        if (data?.data?.accessToken) {
+            localStorage.setItem("access_token", data.data.accessToken);
+            localStorage.setItem("refresh_token", data.data.refreshToken);
+            localStorage.setItem("user", JSON.stringify(data.data.user));
         }
 
         return data;
@@ -78,5 +83,6 @@ export const verifyOtp = async (payload: VerifyOtpRequest): Promise<GenericRespo
 
 export const logout = (): void => {
   localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
   localStorage.removeItem("user"); 
 };

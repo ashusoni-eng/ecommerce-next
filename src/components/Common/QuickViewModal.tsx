@@ -9,6 +9,8 @@ import Image from "next/image";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { resetQuickView } from "@/redux/features/quickView-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
+import { BACKEND_URL } from "@/lib/api";
+
 
 const QuickViewModal = () => {
   const { isModalOpen, closeModal } = useModalContext();
@@ -30,16 +32,16 @@ const QuickViewModal = () => {
   };
 
   // add to cart
-  const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...product,
-        quantity,
-      })
-    );
+  // const handleAddToCart = () => {
+  //   dispatch(
+  //     addItemToCart({
+  //       ...product,
+  //       quantity,
+  //     })
+  //   );
 
-    closeModal();
-  };
+  //   closeModal();
+  // };
 
   useEffect(() => {
     // closing modal while clicking outside
@@ -62,9 +64,8 @@ const QuickViewModal = () => {
 
   return (
     <div
-      className={`${
-        isModalOpen ? "z-99999" : "hidden"
-      } fixed top-0 left-0 overflow-y-auto no-scrollbar w-full h-screen sm:py-20 xl:py-25 2xl:py-[230px] bg-dark/70 sm:px-8 px-4 py-5`}
+      className={`${isModalOpen ? "z-99999" : "hidden"
+        } fixed top-0 left-0 overflow-y-auto no-scrollbar w-full h-screen sm:py-20 xl:py-25 2xl:py-[230px] bg-dark/70 sm:px-8 px-4 py-5`}
     >
       <div className="flex items-center justify-center ">
         <div className="w-full max-w-[1100px] rounded-xl shadow-3 bg-white p-7.5 relative modal-content">
@@ -94,17 +95,16 @@ const QuickViewModal = () => {
             <div className="max-w-[526px] w-full">
               <div className="flex gap-5">
                 <div className="flex flex-col gap-5">
-                  {product.imgs.thumbnails?.map((img, key) => (
+                  {product.images?.map((img, key) => (
                     <button
                       onClick={() => setActivePreview(key)}
                       key={key}
-                      className={`flex items-center justify-center w-20 h-20 overflow-hidden rounded-lg bg-gray-1 ease-out duration-200 hover:border-2 hover:border-blue ${
-                        activePreview === key && "border-2 border-blue"
-                      }`}
+                      className={`flex items-center justify-center w-20 h-20 overflow-hidden rounded-lg bg-gray-1 ease-out duration-200 hover:border-2 hover:border-blue ${activePreview === key && "border-2 border-blue"
+                        }`}
                     >
                       <Image
-                        src={img || ""}
-                        alt="thumbnail"
+                        src={img.url ? BACKEND_URL + img.url : "/placeholder.png"}
+                        alt={img.alt || "thumbnail"}
                         width={61}
                         height={61}
                         className="aspect-square"
@@ -138,8 +138,10 @@ const QuickViewModal = () => {
                     </button>
 
                     <Image
-                      src={product?.imgs?.previews?.[activePreview]}
-                      alt="products-details"
+                      src={product?.images?.[activePreview]?.url
+                        ? BACKEND_URL + product.images[activePreview].url
+                        : "/placeholder.png"}
+                      alt={product?.images?.[activePreview]?.alt ?? "products-details"}
                       width={400}
                       height={400}
                     />
@@ -149,12 +151,15 @@ const QuickViewModal = () => {
             </div>
 
             <div className="max-w-[445px] w-full">
-              <span className="inline-block text-custom-xs font-medium text-white py-1 px-3 bg-green mb-6.5">
-                SALE 20% OFF
-              </span>
+              {Number(product.mrp) > 0 && Number(product.mrp) > Number(product.price) && (
+                <span className="inline-block text-custom-xs font-medium text-white py-1 px-3 bg-green mb-6.5">
+                  SALE {Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100)}% OFF
+                </span>
+              )}
+
 
               <h3 className="font-semibold text-xl xl:text-heading-5 text-dark mb-4">
-                {product.title}
+                {product.name}
               </h3>
 
               <div className="flex flex-wrap items-center gap-5 mb-6">
@@ -284,11 +289,11 @@ const QuickViewModal = () => {
                     <g clipPath="url(#clip0_375_9221)">
                       <path
                         d="M10 0.5625C4.78125 0.5625 0.5625 4.78125 0.5625 10C0.5625 15.2188 4.78125 19.4688 10 19.4688C15.2188 19.4688 19.4688 15.2188 19.4688 10C19.4688 4.78125 15.2188 0.5625 10 0.5625ZM10 18.0625C5.5625 18.0625 1.96875 14.4375 1.96875 10C1.96875 5.5625 5.5625 1.96875 10 1.96875C14.4375 1.96875 18.0625 5.59375 18.0625 10.0312C18.0625 14.4375 14.4375 18.0625 10 18.0625Z"
-                        fill="#22AD5C"
+                        fill={product.stock > 0 ? "#22AD5C" : "#D94A4A"}
                       />
                       <path
                         d="M12.6875 7.09374L8.9688 10.7187L7.2813 9.06249C7.00005 8.78124 6.56255 8.81249 6.2813 9.06249C6.00005 9.34374 6.0313 9.78124 6.2813 10.0625L8.2813 12C8.4688 12.1875 8.7188 12.2812 8.9688 12.2812C9.2188 12.2812 9.4688 12.1875 9.6563 12L13.6875 8.12499C13.9688 7.84374 13.9688 7.40624 13.6875 7.12499C13.4063 6.84374 12.9688 6.84374 12.6875 7.09374Z"
-                        fill="#22AD5C"
+                        fill={product.stock > 0 ? "#22AD5C" : "#D94A4A"}
                       />
                     </g>
                     <defs>
@@ -298,13 +303,14 @@ const QuickViewModal = () => {
                     </defs>
                   </svg>
 
-                  <span className="font-medium text-dark"> In Stock </span>
+                  <span className="font-medium text-dark">
+                    {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                  </span>
                 </div>
               </div>
 
               <p>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has.
+                {product.description}
               </p>
 
               <div className="flex flex-wrap justify-between gap-5 mt-6 mb-7.5">
@@ -315,11 +321,13 @@ const QuickViewModal = () => {
 
                   <span className="flex items-center gap-2">
                     <span className="font-semibold text-dark text-xl xl:text-heading-4">
-                      ${product.discountedPrice}
-                    </span>
-                    <span className="font-medium text-dark-4 text-lg xl:text-2xl line-through">
                       ${product.price}
                     </span>
+                    {product.mrp && product.mrp > product.price && (
+                      <span className="font-medium text-dark-4 text-lg xl:text-2xl line-through">
+                        ${product.mrp}
+                      </span>
+                    )}
                   </span>
                 </div>
 
@@ -393,7 +401,7 @@ const QuickViewModal = () => {
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   disabled={quantity === 0 && true}
-                  onClick={() => handleAddToCart()}
+                  // onClick={() => handleAddToCart()}
                   className={`inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark
                   `}
                 >
