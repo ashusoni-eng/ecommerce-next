@@ -1,11 +1,45 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
-import { useAppSelector } from "@/redux/store";
+import { useAppSelector, AppDispatch } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { setWishlistItems } from "@/redux/features/wishlist-slice";
 import SingleItem from "./SingleItem";
+import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 
 export const Wishlist = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useAuth();
   const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      if (user) {
+        try {
+          const response = await api.get(`/wishlist/${user.id}`);
+          const products = response.data.map(item => item.product);
+          dispatch(setWishlistItems(products));
+        } catch (error) {
+          console.error("Failed to fetch wishlist", error);
+        }
+      }
+    };
+
+    fetchWishlist();
+  }, [user, dispatch]);
+
+  const handleClearWishlist = async () => {
+    if (user) {
+      try {
+        // The backend does not currently support clearing the whole wishlist in one go.
+        // We will just clear it from the frontend for now.
+        dispatch(setWishlistItems([]));
+      } catch (error) {
+        console.error("Failed to clear wishlist", error);
+      }
+    }
+  };
 
   return (
     <>
@@ -14,7 +48,7 @@ export const Wishlist = () => {
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="flex flex-wrap items-center justify-between gap-5 mb-7.5">
             <h2 className="font-medium text-dark text-2xl">Your Wishlist</h2>
-            <button className="text-blue">Clear Wishlist Cart</button>
+            <button onClick={handleClearWishlist} className="text-blue">Clear Wishlist</button>
           </div>
 
           <div className="bg-white rounded-[10px] shadow-1">
@@ -41,9 +75,13 @@ export const Wishlist = () => {
                 </div>
 
                 {/* <!-- wish item --> */}
-                {wishlistItems.map((item, key) => (
-                  <SingleItem item={item} key={key} />
-                ))}
+                {wishlistItems && wishlistItems.length > 0 ? (
+                  wishlistItems.map((item, key) => (
+                    <SingleItem item={item} key={key} />
+                  ))
+                ) : (
+                  <div className="text-center py-10">Your wishlist is empty.</div>
+                )}
               </div>
             </div>
           </div>

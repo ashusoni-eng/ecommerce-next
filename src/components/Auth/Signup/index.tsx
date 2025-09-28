@@ -29,7 +29,7 @@ const Signup = () => {
       const response = await register(userData);
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {
-        router.push('/login');
+        router.push('/signin');
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred during registration.');
@@ -121,7 +121,7 @@ const Signup = () => {
             </span>
 
             <div className="mt-5.5">
-              <form  onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-5">
                   <label htmlFor="name" className="block mb-2.5">
                     Full Name <span className="text-red">*</span>

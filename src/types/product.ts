@@ -21,4 +21,5 @@ export type Product = {
   images: ProductImage[];
   createdAt: string; // Assuming string for simplicity, can be Date
   updatedAt: string; // Assuming string for simplicity, can be Date
+  reviews?: number;
 };

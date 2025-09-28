@@ -10,12 +10,16 @@ import { updateproductDetails } from "@/redux/features/product-details";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { BACKEND_URL } from "@/lib/api";
 
 
 const ProductItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
-
+  const { user } = useAuth();
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
   // update the QuickView state
@@ -40,15 +44,31 @@ const ProductItem = ({ item }: { item: Product }) => {
     );
   };
 
-  // const handleItemToWishList = () => {
-  //   dispatch(
-  //     addItemToWishlist({
-  //       ...item,
-  //       status: "available",
-  //       quantity: 1,
-  //     })
-  //   );
-  // };
+  const handleItemToWishList = async () => {
+    if (user) {
+      try {
+        await api.post("/wishlist", { userId: user.id, productId: item.id });
+        dispatch(
+          addItemToWishlist({
+            id: item.id,
+            title: item.name,
+            price: item.mrp || item.price, // Use mrp as original price, fallback to price
+            discountedPrice: item.price,
+            quantity: 1,
+            status: "available",
+            imgs: {
+              previews: item.images.map((img) => img.url || '').filter(Boolean),
+              thumbnails: item.images.map((img) => img.url || '').filter(Boolean),
+            },
+          })
+        );
+      } catch (error) {
+        console.error("Failed to add item to wishlist", error);
+      }
+    } else {
+      router.push("/signin");
+    }
+  };
 
   const handleProductDetails = () => {
     dispatch(updateproductDetails({ ...item }));
@@ -101,7 +121,7 @@ const ProductItem = ({ item }: { item: Product }) => {
           </button>
 
           <button
-            // onClick={() => handleItemToWishList()}
+            onClick={() => handleItemToWishList()}
             aria-label="button for favorite select"
             id="favOne"
             className="flex items-center justify-center w-9 h-9 rounded-[5px] shadow-1 ease-out duration-200 text-dark bg-white hover:text-blue"

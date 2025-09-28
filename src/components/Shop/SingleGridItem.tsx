@@ -9,11 +9,15 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/auth";
+import { api, BACKEND_URL } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const SingleGridItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
-
+  const { user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
@@ -24,26 +28,52 @@ const SingleGridItem = ({ item }: { item: Product }) => {
   const handleAddToCart = () => {
     dispatch(
       addItemToCart({
-        ...item,
+        id: item.id,
+        title: item.name,
+        price: item.price,
+        mrp: item.mrp,
         quantity: 1,
+        imgs: {
+          previews: item.images.map((img) => img.url || '').filter(Boolean),
+          thumbnails: item.images.map((img) => img.url || '').filter(Boolean),
+        },
       })
     );
   };
 
-  const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: 1,
-      })
-    );
+  const handleItemToWishList = async () => {
+    if (user) {
+      try {
+        await api.post("/wishlist", { userId: user.id, productId: item.id });
+        dispatch(
+          addItemToWishlist({
+            id: item.id,
+            title: item.name,
+            price: item.mrp || item.price, // Use mrp as original price, fallback to price
+            discountedPrice: item.price,
+            quantity: 1,
+            status: "available",
+            imgs: {
+              previews: item.images.map((img) => img.url || '').filter(Boolean),
+              thumbnails: item.images.map((img) => img.url || '').filter(Boolean),
+            },
+          })
+        );
+      } catch (error) {
+        console.error("Failed to add item to wishlist", error);
+      }
+    } else {
+      router.push("/signin");
+    }
   };
+
 
   return (
     <div className="group">
       <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[270px] mb-4">
-        <Image src={item.imgs.previews[0]} alt="" width={250} height={250} />
+        <Image src={BACKEND_URL + (item?.images?.[0]?.url || "/placeholder.svg")}
+          alt={item.name} width={250} height={250} />
+
 
         <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-2.5 pb-5 ease-linear duration-200 group-hover:translate-y-0">
           <button
@@ -144,15 +174,14 @@ const SingleGridItem = ({ item }: { item: Product }) => {
           />
         </div>
 
-        <p className="text-custom-sm">({item.reviews})</p>
       </div>
 
       <h3 className="font-medium text-dark ease-out duration-200 hover:text-blue mb-1.5">
-        <Link href="/shop-details"> {item.title} </Link>
+        <Link href="/shop-details"> {item.name} </Link>
       </h3>
 
       <span className="flex items-center gap-2 font-medium text-lg">
-        <span className="text-dark">${item.discountedPrice}</span>
+        <span className="text-dark">${item.mrp}</span>
         <span className="text-dark-4 line-through">${item.price}</span>
       </span>
     </div>
